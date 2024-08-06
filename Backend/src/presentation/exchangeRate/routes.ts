@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { ExchangeRateController } from "./controller";
 import { ExchangeRateService } from "../services/exchangeRate.service";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
 import { RateService } from "../services/rate.service";
 import { envs } from "../../config";
+import { ScheduleService } from "../services/schedule.service";
 
 export class ExchangeRateRoutes {
 
@@ -16,12 +16,16 @@ export class ExchangeRateRoutes {
             envs.SERVICE_URL_RATE
         );
 
+        const scheduleService = new ScheduleService(rateService);
+
+        scheduleService.start();
+
         const exchangeRateService = new ExchangeRateService(rateService);
 
         const controller = new ExchangeRateController(exchangeRateService);
 
-        router.post('/', [AuthMiddleware.validateJWT], controller.createExchangeRate);
-        router.get('/', [AuthMiddleware.validateJWT], controller.getExchangeRate);
+        router.post('/', controller.createExchangeRate);
+        router.get('/', controller.getExchangeRate);
 
         return router;
     }

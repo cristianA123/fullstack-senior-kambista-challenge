@@ -24,6 +24,11 @@ export class CreateExchangeRateDto {
         if (!monedaDestino) return ['Es olbigatorio el campo monedaDestino'];
         if (!monto) return ['Es olbigatorio el campo monto'];
 
+        const validMonedas = ['USD', 'PEN'];
+        if (!validMonedas.includes(monedaOrigen)) return ['La monedaOrigen debe ser USD o PEN'];
+        if (!validMonedas.includes(monedaDestino)) return ['La monedaDestino debe ser USD o PEN'];
+
+
         const decimalRegEx = /^\d+(\.\d{1,2})?$/;
          if (!decimalRegEx.test(monto.toString())) {
              return ['El monto debe tener como máximo 2 decimales'];

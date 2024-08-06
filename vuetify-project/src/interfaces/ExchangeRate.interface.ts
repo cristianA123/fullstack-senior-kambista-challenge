@@ -22,3 +22,10 @@ export interface ResponseExchangeRate {
     message: string,
     data: DataResponseExchangeRate
 }
+
+export interface ParamsExchangeRate {
+    page: number,
+    limit: number,
+    startDate?: string,
+    endDate?: string
+}

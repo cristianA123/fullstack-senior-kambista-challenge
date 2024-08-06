@@ -1,9 +1,9 @@
 import { ExchangeRateModel } from '../../data';
 import { CustomError, PaginationDto, UserEntity } from '../../domain';
 import { CreateExchangeRateDto } from '../../domain/dtos/exchangeRate/create-exchangeRate.dto';
+import { GetExchangeRateDto } from '../../domain/dtos/exchangeRate/get-exchangeRate.dto';
 import ResponseDTO from '../../domain/dtos/shared/response.dto';
 import { RateResponse, RateService } from './rate.service';
-
 
 export class ExchangeRateService {
 
@@ -40,7 +40,7 @@ export class ExchangeRateService {
               ...createExchangeRateDto,
               montoCambiado,
               tipoCambio,
-              user: user.id,
+              user: user?.id || null,
               fecha: new Date()
             });
       
@@ -53,17 +53,31 @@ export class ExchangeRateService {
         }
     }
 
-    async getExchangeRates(paginationDto: PaginationDto) {
+    async getExchangeRates(paginationDto: PaginationDto, getExchangeRateDto: GetExchangeRateDto) {
 
         const { page, limit } = paginationDto;
+        const { startDate, endDate } = getExchangeRateDto;
 
         const response: ResponseDTO = { success: true, message: "Lista de cambios de moneda", data: {} };
+
+        const filter: any = {};
+        if (startDate || endDate) {
+            filter.fecha = {};
+            if (startDate) {
+                console.log(endDate)
+                console.log(startDate)
+                filter.fecha.$gte = startDate;
+            }
+            if (endDate) {
+                filter.fecha.$lte = endDate;
+            }
+        }
 
         try {
 
             const [total, exhangeRates] = await Promise.all([
-                ExchangeRateModel.countDocuments(),
-                ExchangeRateModel.find()
+                ExchangeRateModel.countDocuments(filter),
+                ExchangeRateModel.find(filter)
                     .skip((page - 1) * limit)
                     .limit(limit)
             ]);
@@ -90,6 +104,7 @@ export class ExchangeRateService {
 
 
         } catch (error) {
+            console.log(error);
             throw CustomError.internalServer('Internal Server Error');
         }
     }

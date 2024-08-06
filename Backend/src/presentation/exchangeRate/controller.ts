@@ -2,6 +2,7 @@ import { Response, Request } from 'express';
 import { CustomError, PaginationDto } from '../../domain';
 import { CreateExchangeRateDto } from '../../domain/dtos/exchangeRate/create-exchangeRate.dto';
 import { ExchangeRateService } from '../services/exchangeRate.service';
+import { GetExchangeRateDto } from '../../domain/dtos/exchangeRate/get-exchangeRate.dto';
 
 export class ExchangeRateController {
 
@@ -34,11 +35,12 @@ export class ExchangeRateController {
 
   getExchangeRate = async ( req: Request, res: Response ) => {
 
-    const { page = 1, limit = 10 } = req.query;
-    const [ error, paginationDto ] = PaginationDto.create( +page, +limit );
-    if ( error ) return res.status(400).json({ error });
+    const { page = 1, limit = 10, startDate, endDate } = req.query;
+    const [ errorPagination, paginationDto ] = PaginationDto.create( +page, +limit );
+    const [ errorGetExchangeRate, getExchangeRateDto ] = GetExchangeRateDto.create( {startDate, endDate} );
+    if ( errorPagination || errorGetExchangeRate ) return res.status(400).json({ errorPagination, errorGetExchangeRate });
     
-    this.exchangeRateService.getExchangeRates( paginationDto! )
+    this.exchangeRateService.getExchangeRates( paginationDto!, getExchangeRateDto! )
       .then( categories => res.json( categories ))
       .catch( error => this.handleError( error, res ) );
 
